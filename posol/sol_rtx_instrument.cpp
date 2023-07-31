@@ -37,6 +37,18 @@ void visus::power_overwhelming::sol_rtx_instrument(void* state) {
 
     rtx_instrument_table["trigger"] =
         static_cast<rtx_instrument& (rtx_instrument::*)(const oscilloscope_trigger&)>(&rtx_instrument::trigger);
+
+    lua.set_function("find_resources", [](const char*, const char*) -> std::vector<rtx_instrument> {
+        std::vector<rtx_instrument> ret;
+
+        auto devices = visa_instrument::find_resources("0x0AAD", "0x01D6");
+
+        for (auto d = devices.as<char>(); (d != nullptr) && (*d != 0); d += strlen(d) + 1) {
+            ret.emplace_back(d);
+        }
+
+        return ret;
+    });
 }
 
 
