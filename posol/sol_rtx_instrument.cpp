@@ -38,3 +38,23 @@ void visus::power_overwhelming::sol_rtx_instrument(void* state) {
     rtx_instrument_table["trigger"] =
         static_cast<rtx_instrument& (rtx_instrument::*)(const oscilloscope_trigger&)>(&rtx_instrument::trigger);
 }
+
+
+void visus::power_overwhelming::sol_oscilloscope_single_acquisition(void* state) {
+    sol::state_view lua(reinterpret_cast<lua_State*>(state));
+
+    auto acq_table = lua.new_usertype<oscilloscope_single_acquisition>(
+        "oscilloscope_single_acquisition", sol::constructors<oscilloscope_single_acquisition()>());
+
+    acq_table["count"] =
+        static_cast<oscilloscope_single_acquisition& (oscilloscope_single_acquisition::*)(const unsigned int)>(
+            &oscilloscope_single_acquisition::count);
+
+    acq_table["points"] =
+        static_cast<oscilloscope_single_acquisition& (oscilloscope_single_acquisition::*)(const unsigned int)>(
+            &oscilloscope_single_acquisition::points);
+
+    acq_table["segmented"] =
+        static_cast<oscilloscope_single_acquisition& (oscilloscope_single_acquisition::*)(const bool)>(
+            &oscilloscope_single_acquisition::segmented);
+}
