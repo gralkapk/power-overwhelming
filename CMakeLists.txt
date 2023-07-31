@@ -3,7 +3,12 @@
 
 cmake_minimum_required(VERSION 3.15...3.26)
 
-include(posol_vcpkg_setup.cmake)
+option(PWROWG_UseVCPKG "Use VCPKG" ON)
+mark_as_advanced(PWROWG_UseVCPKG)
+
+if (PWROWG_UseVCPKG)
+  include(posol_vcpkg_setup.cmake)
+endif()
 
 project(power_overwhelming)
 
