@@ -3,6 +3,8 @@
 
 cmake_minimum_required(VERSION 3.15...3.26)
 
+include(posol_vcpkg_setup.cmake)
+
 project(power_overwhelming)
 
 include(CMakeDependentOption)
@@ -17,6 +19,7 @@ cmake_dependent_option(PWROWG_BuildTests "Build unit tests." ON WIN32 OFF)
 cmake_dependent_option(PWROWG_BuildWeb "Build browser for benchmarking web-based visualisations" OFF WIN32 OFF)
 option(PWROWG_NoPackageRestore "Disable automatic restore of Nuget packages as pre-build step" OFF)
 mark_as_advanced(PWROWG_NoPackageRestore)
+option(PWROWG_BuildSol "Build Sol interface" OFF)
 
 # Dependencies
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
@@ -53,4 +56,9 @@ endif ()
 # Stable power tool
 if (PWROWG_BuildStablePower)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/setstablepowerstate)
+endif ()
+
+# Sol interface
+if (PWROWG_BuildSol)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/posol)
 endif ()
