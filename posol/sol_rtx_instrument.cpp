@@ -86,3 +86,33 @@ void visus::power_overwhelming::sol_oscilloscope_channel(void* state) {
     channel_table["state"] =
         static_cast<oscilloscope_channel& (oscilloscope_channel::*)(const bool)>(&oscilloscope_channel::state);
 }
+
+
+void visus::power_overwhelming::sol_oscilloscope_edge_trigger(void* state) {
+    sol::state_view lua(reinterpret_cast<lua_State*>(state));
+
+    auto trigger_table = lua.new_usertype<oscilloscope_edge_trigger>(
+        "oscilloscope_edge_trigger", sol::constructors<oscilloscope_edge_trigger(const char*)>());
+
+    trigger_table["level"] = sol::overload(
+        static_cast<oscilloscope_edge_trigger& (
+            oscilloscope_edge_trigger::*)(const oscilloscope_edge_trigger::input_type, const oscilloscope_quantity&)>(
+            &oscilloscope_edge_trigger::level),
+        static_cast<oscilloscope_edge_trigger& (oscilloscope_edge_trigger::*)(const oscilloscope_quantity&)>(
+            &oscilloscope_edge_trigger::level));
+
+    trigger_table["slope"] =
+        static_cast<oscilloscope_edge_trigger& (oscilloscope_edge_trigger::*)(const oscilloscope_trigger_slope)>(
+            &oscilloscope_edge_trigger::slope);
+
+    trigger_table["mode"] =
+        static_cast<oscilloscope_trigger& (oscilloscope_edge_trigger::*)(const oscilloscope_trigger_mode)>(
+            &oscilloscope_edge_trigger::mode);
+
+    lua.new_enum<oscilloscope_trigger_slope>("oscilloscope_trigger_slope",
+        {{"both", oscilloscope_trigger_slope::both}, {"rising", oscilloscope_trigger_slope::rising},
+            {"falling", oscilloscope_trigger_slope::falling}});
+
+    lua.new_enum<oscilloscope_trigger_mode>("oscilloscope_trigger_mode",
+        {{"automatic", oscilloscope_trigger_mode::automatic}, {"normal", oscilloscope_trigger_mode::normal}});
+}
