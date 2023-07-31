@@ -58,3 +58,12 @@ void visus::power_overwhelming::sol_oscilloscope_single_acquisition(void* state)
         static_cast<oscilloscope_single_acquisition& (oscilloscope_single_acquisition::*)(const bool)>(
             &oscilloscope_single_acquisition::segmented);
 }
+
+
+void visus::power_overwhelming::sol_oscilloscope_reference_point(void* state) {
+    sol::state_view lua(reinterpret_cast<lua_State*>(state));
+
+    lua.new_enum<oscilloscope_reference_point>("oscilloscope_reference_point",
+        {{"left", oscilloscope_reference_point::left}, {"middle", oscilloscope_reference_point::left},
+            {"right", oscilloscope_reference_point::right}});
+}
