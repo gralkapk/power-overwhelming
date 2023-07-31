@@ -124,3 +124,11 @@ void visus::power_overwhelming::sol_oscilloscope_quantity(void* state) {
     auto quant_table = lua.new_usertype<oscilloscope_quantity>(
         "oscilloscope_quantity", sol::constructors<oscilloscope_quantity(const float, const char* unit)>());
 }
+
+
+void visus::power_overwhelming::sol_oscilloscope_label(void* state) {
+    sol::state_view lua(reinterpret_cast<lua_State*>(state));
+
+    auto label_table = lua.new_usertype<oscilloscope_label>(
+        "oscilloscope_label", sol::constructors<oscilloscope_label(), oscilloscope_label(const char*, const bool)>());
+}
