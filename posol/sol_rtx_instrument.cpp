@@ -132,3 +132,20 @@ void visus::power_overwhelming::sol_oscilloscope_label(void* state) {
     auto label_table = lua.new_usertype<oscilloscope_label>(
         "oscilloscope_label", sol::constructors<oscilloscope_label(), oscilloscope_label(const char*, const bool)>());
 }
+
+
+void visus::power_overwhelming::sol_register_all(void* state) {
+    sol_rtx_instrument(state);
+
+    sol_oscilloscope_single_acquisition(state);
+
+    sol_oscilloscope_reference_point(state);
+
+    sol_oscilloscope_channel(state);
+
+    sol_oscilloscope_edge_trigger(state);
+
+    sol_oscilloscope_quantity(state);
+
+    sol_oscilloscope_label(state);
+}
