@@ -67,3 +67,22 @@ void visus::power_overwhelming::sol_oscilloscope_reference_point(void* state) {
         {{"left", oscilloscope_reference_point::left}, {"middle", oscilloscope_reference_point::left},
             {"right", oscilloscope_reference_point::right}});
 }
+
+
+void visus::power_overwhelming::sol_oscilloscope_channel(void* state) {
+    sol::state_view lua(reinterpret_cast<lua_State*>(state));
+
+    auto channel_table = lua.new_usertype<oscilloscope_channel>(
+        "oscilloscope_channel", sol::constructors<oscilloscope_channel(const std::uint32_t),
+                                    oscilloscope_channel(const std::uint32_t, const oscilloscope_channel&)>());
+
+    channel_table["attenuation"] =
+        static_cast<oscilloscope_channel& (oscilloscope_channel::*)(const oscilloscope_quantity&)>(
+            &oscilloscope_channel::attenuation);
+
+    channel_table["label"] = static_cast<oscilloscope_channel& (oscilloscope_channel::*)(const oscilloscope_label&)>(
+        &oscilloscope_channel::label);
+
+    channel_table["state"] =
+        static_cast<oscilloscope_channel& (oscilloscope_channel::*)(const bool)>(&oscilloscope_channel::state);
+}
