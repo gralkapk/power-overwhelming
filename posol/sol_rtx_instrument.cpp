@@ -116,3 +116,11 @@ void visus::power_overwhelming::sol_oscilloscope_edge_trigger(void* state) {
     lua.new_enum<oscilloscope_trigger_mode>("oscilloscope_trigger_mode",
         {{"automatic", oscilloscope_trigger_mode::automatic}, {"normal", oscilloscope_trigger_mode::normal}});
 }
+
+
+void visus::power_overwhelming::sol_oscilloscope_quantity(void* state) {
+    sol::state_view lua(reinterpret_cast<lua_State*>(state));
+
+    auto quant_table = lua.new_usertype<oscilloscope_quantity>(
+        "oscilloscope_quantity", sol::constructors<oscilloscope_quantity(const float, const char* unit)>());
+}

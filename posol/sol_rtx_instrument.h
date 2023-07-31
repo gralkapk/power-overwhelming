@@ -11,4 +11,6 @@ void sol_oscilloscope_reference_point(void* state);
 void sol_oscilloscope_channel(void* state);
 
 void sol_oscilloscope_edge_trigger(void* state);
+
+void sol_oscilloscope_quantity(void* state);
 } // namespace visus::power_overwhelming
