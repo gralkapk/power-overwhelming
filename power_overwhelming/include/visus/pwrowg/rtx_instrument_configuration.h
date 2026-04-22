@@ -308,6 +308,12 @@ public:
         rtx_instrument_configuration *dst,
         _In_ std::size_t cnt, _In_z_ const wchar_t *path);
 
+    static std::size_t load(_In_reads_(cnt)
+        const rtx_instrument *instruments,
+        _When_(configurations != nullptr, _Out_writes_opt_(cnt))
+        rtx_instrument_configuration *configurations,
+        _In_ std::size_t cnt, _In_z_ const wchar_t *path);
+
     /// <summary>
     /// Loads a single configuration from the given JSON file.
     /// </summary>

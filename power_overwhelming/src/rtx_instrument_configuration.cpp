@@ -461,6 +461,68 @@ std::size_t PWROWG_NAMESPACE::rtx_instrument_configuration::load(
 /*
  * PWROWG_NAMESPACE::rtx_instrument_configuration::load
  */
+std::size_t PWROWG_NAMESPACE::rtx_instrument_configuration::load(
+    _In_reads_(cnt) const rtx_instrument *instruments,
+    _When_(configurations != nullptr, _Out_writes_opt_(cnt))
+    rtx_instrument_configuration *configurations,
+    _In_ std::size_t cnt, _In_z_ const wchar_t *path) {
+    if ((cnt > 0) && (instruments == nullptr)) {
+        throw std::invalid_argument("The instrument array for which "
+            "to read the configurations must be valid unless the "
+            "number of instruments/configurations is zero.");
+    }
+    if ((cnt > 0) && (configurations == nullptr)) {
+        throw std::invalid_argument("The configuration array to store the "
+            "configurations to must be valid unless the "
+            "number of instruments/configurations is zero.");
+    }
+
+    auto json = detail::load_json(path);
+
+    std::vector<rtx_instrument_configuration> configs;
+    std::map<std::string, std::size_t> by_name;
+    std::map<std::string, std::size_t> by_path;
+
+    // Find out what kind of data we have. If we have an array, add all of its
+    // members. If we have a single object, just add this one. Any other type
+    // of data indicates an invalid file.
+    switch (json.type()) {
+    case nlohmann::json::value_t::array:
+        for (auto j : json) {
+            detail::parse_rtx_instument_conf(j, configs, by_path, by_name);
+        }
+        break;
+
+    case nlohmann::json::value_t::object:
+        detail::parse_rtx_instument_conf(json, configs, by_path, by_name);
+        break;
+
+    default:
+        throw std::invalid_argument("The specified file did not contain "
+            "a configuration object or an array thereof.");
+    }
+
+    if (configs.size() < 1) {
+        throw std::invalid_argument("The specified file did not contain any "
+            "valid configuration objects.");
+    }
+
+    for (std::size_t i = 0; i < cnt; ++i) {
+        auto const& instrument = instruments[i];
+
+        {
+            auto it = by_path.find(instrument.path());
+            if (it != by_path.end()) {
+                configurations[i] = configs[it->second];
+            }
+        }
+    }
+}
+
+
+/*
+ * PWROWG_NAMESPACE::rtx_instrument_configuration::load
+ */
 PWROWG_NAMESPACE::rtx_instrument_configuration
 PWROWG_NAMESPACE::rtx_instrument_configuration::load(
         _In_z_ const wchar_t *path) {
