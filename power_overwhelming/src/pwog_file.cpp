@@ -35,6 +35,7 @@
 #endif /* defined(POWER_OVERWHELMING_WITH_PARQUET) */
 
 #include "visus/pwrowg/timestamp.h"
+#include "visus/pwrowg/trace.h"
 
 #include "hdf5_sink_impl.h"
 #include "io_util.h"
@@ -325,6 +326,22 @@ std::size_t PWROWG_NAMESPACE::pwog_file::to_hdf5(
             hsize_t current_dims[1];
             current_space.getSimpleExtentDims(current_dims, nullptr);
 
+            if (config.lenient()) {
+                const auto end = std::remove_if(
+                    samples.begin(),
+                    samples.begin() + cnt,
+                    [&reading_types](const sample& s) {
+                        return (s.source >= reading_types.size());
+                    });
+                const auto rem = std::distance(end, samples.begin() + cnt);
+                PWROWG_TRACE(_T("Removing %u samples with invalid source ")
+                    _T("index."), rem);
+                assert(rem < cnt);
+                cnt -= rem;
+            }
+
+            retval += cnt;
+
             if (!config.raw()) {
                 // If requested, perform the conversion to floats.
                 for (auto& s : samples) {
@@ -466,7 +483,12 @@ std::size_t PWROWG_NAMESPACE::pwog_file::to_parquet(
     }
 
     while ((cnt = file.read(samples.data(), samples.size())) > 0) {
-        for (std::size_t i = 0; i < cnt; ++i, ++retval) {
+        for (std::size_t i = 0; i < cnt; ++i) {
+            if (config.lenient() && (samples[i].source >= sensors->size())) {
+                PWROWG_TRACE(_T("Skipping sample with invalid source index."));
+                continue;
+            }
+
             writer << samples[i].timestamp.value();
 
             switch (config.identity()) {
@@ -515,6 +537,7 @@ std::size_t PWROWG_NAMESPACE::pwog_file::to_parquet(
             }
 
             writer << parquet::EndRow;
+            ++retval;
         }
 
         writer << parquet::EndRowGroup;
