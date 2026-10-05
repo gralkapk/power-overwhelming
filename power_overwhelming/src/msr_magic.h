@@ -87,7 +87,7 @@ enum class msr_interface : std::uint32_t {
 };
 
 _Ret_z_ const wchar_t* to_string(
-    _In_ const msr_interface rapl_if);
+    _In_ const msr_interface msr_if);
 
 /// <summary>
 /// A container for all the magic offsets required to retrieve and interpret
@@ -105,7 +105,7 @@ struct msr_magic_config final {
     /// </summary>
     sensor_type type;
 
-    msr_interface rapl_if;
+    msr_interface msr_if;
 
     /// <summary>
     /// Specifies the offset into the MSR file where the unit divisors are
@@ -151,7 +151,8 @@ PWROWG_TEST_API msr_magic_config_entry make_energy_magic_config(
     _In_ const cpu_vendor vendor,
     _In_ const rapl_domain domain,
     _In_ const std::streamoff data_location,
-    _In_ const sensor_type type);
+    _In_ const sensor_type type,
+    _In_ const msr_interface msr_if);
 
 /// <summary>
 /// Creates a <see cref="msr_magic_config" /> for a CPU from the specified
@@ -162,7 +163,8 @@ inline PWROWG_TEST_API msr_magic_config_entry make_power_magic_config(
     _In_ const cpu_vendor vendor,
     _In_ const rapl_domain domain,
     _In_ const std::streamoff data_location,
-    _In_ const sensor_type type);
+    _In_ const sensor_type type,
+    _In_ const msr_interface msr_if);
 
 /// <summary>
 /// Creates a <see cref="msr_magic_config" /> for a CPU from the specified
@@ -173,7 +175,8 @@ inline PWROWG_TEST_API msr_magic_config_entry make_time_magic_config(
     _In_ const cpu_vendor vendor,
     _In_ const rapl_domain domain,
     _In_ const std::streamoff data_location,
-    _In_ const sensor_type type);
+    _In_ const sensor_type type,
+    _In_ const msr_interface msr_if);
 
 
 PWROWG_DETAIL_NAMESPACE_END

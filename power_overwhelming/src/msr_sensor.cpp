@@ -26,7 +26,7 @@ PWROWG_DETAIL_NAMESPACE_BEGIN
 /// the MSR device file, which can also be used to find out whether a
 /// RAPL domain is supported for a CPU vendor.
 /// </summary>
-typedef std::map<cpu_vendor, std::map<rapl_domain, msr_magic_config>>
+typedef std::map<cpu_vendor, std::vector<std::pair<rapl_domain, msr_magic_config>>>
 rapl_domain_configs_type;
 
 /// <summary>
@@ -40,11 +40,13 @@ static const rapl_domain_configs_type domain_configs = {
             make_energy_magic_config(cpu_vendor::amd,
                 rapl_domain::package,
                 msr_offsets::amd::package_energy_status,
-                sensor_type::cpu | sensor_type::gpu | sensor_type::power),
+                sensor_type::cpu | sensor_type::gpu,
+                msr_interface::energy_status),
             make_energy_magic_config(cpu_vendor::amd,
                 rapl_domain::pp0,
                 msr_offsets::amd::pp0_energy_status,
-                sensor_type::cpu | sensor_type::power)
+                sensor_type::cpu,
+                msr_interface::energy_status)
         }
     },
 
@@ -54,26 +56,41 @@ static const rapl_domain_configs_type domain_configs = {
             make_energy_magic_config(cpu_vendor::intel,
                 rapl_domain::dram,
                 msr_offsets::intel::dram_energy_status,
-                sensor_type::memory | sensor_type::power),
+                sensor_type::memory,
+                msr_interface::energy_status),
             make_energy_magic_config(cpu_vendor::intel,
                 rapl_domain::package,
                 msr_offsets::intel::package_energy_status,
-                sensor_type::cpu | sensor_type::gpu | sensor_type::power),
+                sensor_type::cpu | sensor_type::gpu,
+                msr_interface::energy_status),
             make_energy_magic_config(cpu_vendor::intel,
                 rapl_domain::pp0,
                 msr_offsets::intel::pp0_energy_status,
-                sensor_type::cpu | sensor_type::power),
+                sensor_type::cpu,
+                msr_interface::energy_status),
             make_energy_magic_config(cpu_vendor::intel,
                 rapl_domain::pp1,
                 msr_offsets::intel::pp1_energy_status,
                 // Technically, PP1 ("uncore") does not only include the
                 // onboard GPU, but also other components other than CPU
                 // cores.
-                sensor_type::gpu),
+                sensor_type::gpu,
+                msr_interface::energy_status),
+           make_time_magic_config(cpu_vendor::intel,
+                rapl_domain::dram,
+                msr_offsets::intel::dram_performance_status,
+                sensor_type::memory,
+                msr_interface::perf_status),
             make_time_magic_config(cpu_vendor::intel,
                 rapl_domain::package,
                 msr_offsets::intel::package_performance_status,
-                sensor_type::cpu | sensor_type::time),
+                sensor_type::cpu,
+                msr_interface::perf_status),
+            make_time_magic_config(cpu_vendor::intel,
+                rapl_domain::pp0,
+                msr_offsets::intel::pp0_performance_status,
+                sensor_type::cpu,
+                msr_interface::perf_status),
         }
     },
 };
@@ -149,39 +166,42 @@ std::size_t PWROWG_DETAIL_NAMESPACE::msr_sensor::descriptions(
                 }
 
                 builder.with_path(path)
-                    .with_type(d.second.type)
                     .produces(reading_type::floating_point);
                 auto raw_builder = builder;
 
-                switch (d.second.rapl_if) {
+                switch (d.second.msr_if) {
                 case msr_interface::energy_status:
-                    builder.with_id(L"MSR/%d/%s/%s", c, to_string(d.first), to_string(d.second.rapl_if))
+                    builder.with_id(L"MSR/%d/%s/%s", c, to_string(d.first), to_string(d.second.msr_if))
                         .with_name(L"%s Core %d %s %s (MSR)", to_string(vendor), c,
-                            to_string(d.first), to_string(d.second.rapl_if))
+                            to_string(d.first), to_string(d.second.msr_if))
                         .measured_in(reading_unit::watt)
+                        .with_type(d.second.type | sensor_type::power)
                         .with_new_private_data<register_identifier>(
                             d.second.data_location,
                             msr_unit_divisor(dev, d.second), &process_power);
-                    raw_builder.with_id(L"MSR/%d/%s/%s(RAW)", c, to_string(d.first), to_string(d.second.rapl_if))
+                    raw_builder.with_id(L"MSR/%d/%s/%s(RAW)", c, to_string(d.first), to_string(d.second.msr_if))
                         .with_name(L"%s Core %d %s %s RAW (MSR)", to_string(vendor), c,
-                            to_string(d.first), to_string(d.second.rapl_if))
+                            to_string(d.first), to_string(d.second.msr_if))
                         .measured_in(reading_unit::joule)
+                        .with_type(d.second.type | sensor_type::energy)
                         .with_new_private_data<register_identifier>(
                             d.second.data_location,
                             msr_unit_divisor(dev, d.second), &process_raw);
                     break;
                 case msr_interface::perf_status:
-                    builder.with_id(L"MSR/%d/%s/%s", c, to_string(d.first), to_string(d.second.rapl_if))
+                    builder.with_id(L"MSR/%d/%s/%s", c, to_string(d.first), to_string(d.second.msr_if))
                         .with_name(L"%s Core %d %s %s (MSR)", to_string(vendor), c,
-                            to_string(d.first), to_string(d.second.rapl_if))
+                            to_string(d.first), to_string(d.second.msr_if))
                         .measured_in(reading_unit::second)
+                        .with_type(d.second.type | sensor_type::time)
                         .with_new_private_data<register_identifier>(
                             d.second.data_location,
                             msr_unit_divisor(dev, d.second), &process_time);
-                    raw_builder.with_id(L"MSR/%d/%s/%s(RAW)", c, to_string(d.first), to_string(d.second.rapl_if))
+                    raw_builder.with_id(L"MSR/%d/%s/%s(RAW)", c, to_string(d.first), to_string(d.second.msr_if))
                         .with_name(L"%s Core %d %s %s RAW (MSR)", to_string(vendor), c,
-                            to_string(d.first), to_string(d.second.rapl_if))
+                            to_string(d.first), to_string(d.second.msr_if))
                         .measured_in(reading_unit::second)
+                        .with_type(d.second.type | sensor_type::time)
                         .with_new_private_data<register_identifier>(
                             d.second.data_location,
                             msr_unit_divisor(dev, d.second), &process_raw);

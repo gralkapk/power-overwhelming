@@ -14,11 +14,11 @@
  * PWROWG_DETAIL_NAMESPACE::to_string
  */
 _Ret_z_ const wchar_t* PWROWG_DETAIL_NAMESPACE::to_string(
-    _In_ const msr_interface rapl_if) {
+    _In_ const msr_interface msr_if) {
 #define _GCC_IS_SHIT(v) L##v
 #define _TO_STRING_CASE(v) case msr_interface::v: return _GCC_IS_SHIT(#v)
 
-    switch (rapl_if) {
+    switch (msr_if) {
         _TO_STRING_CASE(power_limit);
         _TO_STRING_CASE(energy_status);
         _TO_STRING_CASE(perf_status);
@@ -26,7 +26,7 @@ _Ret_z_ const wchar_t* PWROWG_DETAIL_NAMESPACE::to_string(
         _TO_STRING_CASE(policy);
 
     default:
-        throw std::invalid_argument("The specified RAPL domain is "
+        throw std::invalid_argument("The specified MSR interface is "
             "unknown. Make sure to add all new sources in to_string.");
     }
 
@@ -43,10 +43,12 @@ PWROWG_DETAIL_NAMESPACE::make_energy_magic_config(
         _In_ const cpu_vendor vendor,
         _In_ const rapl_domain domain,
         _In_ const std::streamoff data_location,
-        _In_ const sensor_type type) {
+        _In_ const sensor_type type,
+        _In_ const msr_interface msr_if) {
     msr_magic_config config;
     config.data_location = data_location;
     config.type = sensor_type::software | type;
+    config.msr_if = msr_if;
 
     switch (vendor) {
         case cpu_vendor::amd:
@@ -78,10 +80,12 @@ PWROWG_DETAIL_NAMESPACE::make_power_magic_config(
     _In_ const cpu_vendor vendor,
     _In_ const rapl_domain domain,
     _In_ const std::streamoff data_location,
-    _In_ const sensor_type type) {
+    _In_ const sensor_type type,
+    _In_ const msr_interface msr_if) {
     msr_magic_config config;
     config.data_location = data_location;
     config.type = sensor_type::software | type;
+    config.msr_if = msr_if;
 
     switch (vendor) {
 
@@ -108,10 +112,12 @@ PWROWG_DETAIL_NAMESPACE::make_time_magic_config(
     _In_ const cpu_vendor vendor,
     _In_ const rapl_domain domain,
     _In_ const std::streamoff data_location,
-    _In_ const sensor_type type) {
+    _In_ const sensor_type type,
+    _In_ const msr_interface msr_if) {
     msr_magic_config config;
     config.data_location = data_location;
     config.type = sensor_type::software | type;
+    config.msr_if = msr_if;
 
     switch (vendor) {
 
